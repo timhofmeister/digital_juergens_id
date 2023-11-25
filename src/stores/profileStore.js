@@ -23,6 +23,8 @@ export const useProfileStore = defineStore('profile', () => {
     const isLoaded = ref(false);
     const error = ref(false);
 
+    const isCheckedState = ref(0); // 0: not checked, 1: checking, 2: checked
+
     async function fetchProfile() {
         loading.value = true;
         error.value = false;
@@ -57,7 +59,8 @@ export const useProfileStore = defineStore('profile', () => {
                 filter: `owner_id=eq.${id.value}`,
                 },
                 (payload) => {
-                    isChecked.value = true;
+                    isCheckedState.value = 1;
+                    setTimeout(() => isCheckedState.value = 2, 2500);
                 }
             ).subscribe()
 
@@ -90,10 +93,8 @@ export const useProfileStore = defineStore('profile', () => {
     }
     resetValues();
 
-    const isChecked = ref(false);
-
     const testCheck = async () => {
-
+        isCheckedState.value = 1;
         const {data: id_checks, err} = await supabase
             .from('id_checks')
             .select("*")
@@ -101,24 +102,32 @@ export const useProfileStore = defineStore('profile', () => {
             .order('inspected_at', { ascending: false })
             .limit(1);
             
-        if(err) return;
-        if(!id_checks || id_checks.length < 1) return;
+        if(err || !id_checks || id_checks.length < 1){
+            isCheckedState.value = 0;
+            return;
+        } 
 
         if (date.isValid(id_checks[0].inspected_at)){
             const age = date.getDateDiff(Date.now(), id_checks[0].inspected_at, 'minutes')
             console.log(age)
             if(age < 2){
-                isChecked.value = true;
+                setTimeout(() => isCheckedState.value = 2, 400);
                 return
             }
         }
-        isChecked.value = false;
+        setTimeout(() => isCheckedState.value = 0, 1000);
     }
     setInterval(() => {
-        if(isChecked.value) testCheck();
+        if(isCheckedState.value == 2) testCheck();
     }, 60000); // Check every minute
 
-    return {id, name, membership_num, birthday, date_of_issue, rank, qrData, loading, isLoaded, isChecked, error, fetchProfile, fetchProfileOnce}
+    const logout = async () => {
+        let { error } = await supabase.auth.signOut();
+        isLoaded.value = false;
+        resetValues();
+    }
+
+    return {id, MAGIC, name, membership_num, birthday, date_of_issue, rank, qrData, loading, isLoaded, isCheckedState, error, fetchProfile, fetchProfileOnce, logout}
 
 });
 

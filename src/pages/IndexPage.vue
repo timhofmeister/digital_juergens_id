@@ -1,11 +1,11 @@
 <template>
-  <q-page class="flex flex-center">
+  <q-page class="flex flex-center bg-grey-4">
 
-    <q-pull-to-refresh @refresh="refresh">
+    <q-pull-to-refresh @refresh="refresh" color="blue-8">
 
         <div class="q-pa-md row items-start q-gutter-md">    
             
-            <q-card :class="profile.isChecked ? 'my-card-verified' : 'my-card'" flat bordered>
+            <q-card :class="profile.isCheckedState == 2 ? 'my-card-verified' : 'my-card'">
                 <q-banner v-if="profile.error" inline-actions class="text-white bg-red-5">Something went wrong...</q-banner>
 
                 <q-card-section horizontal class="justify-between">
@@ -38,14 +38,16 @@
                     <div class="text-subtitle1 q-mb-xs">{{ date.formatDate(profile.date_of_issue, 'DD.MM.YYYY') }}</div>
 
                     <div class="text-caption text-grey-8">Aktueller Rang:</div>
-                    <div class="text-subtitle1 q-mb-xs">{{ profile.rank }}</div>
+                    <div class="text-subtitle1">{{ profile.rank }}</div>
+                    <div class="text-caption text-grey-10">Geschäftsjahr 2022/2023</div>
                     </q-card-section>
                     <q-card-section class="q-mr-sm">
-                        <q-icon v-if="profile.isChecked" name="task_alt" size="2rem" color="green-8"/>
+                        <q-circular-progress v-if="profile.isCheckedState == 1" indeterminate size="1.5rem" color="positive" />
+                        <q-icon v-if="profile.isCheckedState == 2" name="task_alt" size="2rem" color="positive"/>
                     </q-card-section>
                 </q-card-section>
 
-                <q-separator inset :color="profile.isChecked ? 'green-8' : 'grey-5'"/>
+                <q-separator inset :color="profile.isChecked == 2 ? 'green-8' : 'grey-5'"/>
 
                 <q-card-section class="flex flex-center">
                     <qrcode-vue :value="profile.qrData" :size="250"/>
@@ -78,9 +80,12 @@
 <style lang="sass" scoped>
 .my-card
   width: 100%
+  border-width: 0px
+  border-radius: 10px
   border-color: $grey-5
 
 .my-card-verified
   width: 100%
-  border-color: $green-8
+  border-width: 3px
+  border-color: $positive
 </style>

@@ -1,11 +1,14 @@
 <template>
 
-    <q-page class="flex flex-center bg-grey-4">
+    <q-page class="flex flex-center">
         
-        <!-- Is v-if="gotPermission" really necessary on Android? It leads to an error in ios when getting the video element -->
         <qrcode-stream v-if="gotPermission" @detect="onDetect"></qrcode-stream>
         
         <div class="text-h6">{{ permissionStatus }}</div>
+        <!--
+            <video ref="videoElement"></video>
+            <StreamBarcodeReader @decode="onDecode"></StreamBarcodeReader>
+        -->
 
         <q-dialog v-model="showVerifyDialog">
             <q-card >
@@ -14,7 +17,7 @@
                 </q-card-section>
                 <q-card-section class="text-center">    
                     <q-inner-loading :showing="verifyState == 0" />
-                    <q-avatar v-if="verifyState == 1" color="positive" text-color="white" icon="check" />
+                    <q-avatar v-if="verifyState == 1" color="green-8" text-color="white" icon="check" />
                     <q-avatar v-if="verifyState == 2" color="red-8" text-color="white" icon="error" />
                 </q-card-section>
                 <q-card-section>
@@ -33,7 +36,22 @@
     import CryptoJS from 'crypto-js'
     import { useProfileStore } from 'src/stores/profileStore'
     import { useQuasar } from 'quasar'
+    
+    // import { StreamBarcodeReader } from "vue-barcode-reader";
     import { QrcodeStream } from 'vue3-qrcode-reader'
+
+    // function onDecode (result) { console.log(result) }
+
+    // cordova.plugins.mlkit.barcodeScanner.scan(
+    //     options,
+    //     (result) => {
+    //         // Do something with the data
+    //         alert(result);
+    //     },
+    //     (error) => {
+    //         // Error handling
+    //     },
+    //     );
     
     const profile = useProfileStore();
     const { supabase } = useSupabase();
@@ -41,23 +59,23 @@
 
     const permissionStatus = ref('Init Variable permissionStatus');
     const gotPermission = ref(false);
-    // var permissions;
-    
+    // const videoElement = ref(null);
+    var permissions;
     onMounted(async () => {
         
         profile.fetchProfileOnce();
 
         if($q.platform.is.nativeMobile && $q.platform.is.android){
-            const permissions = cordova.plugins.permissions;
+            permissions = cordova.plugins.permissions;
             permissions.hasPermission(permissions.CAMERA, (status) => {
                 if (!status.hasPermission) {
+                    console.log("No Camera permission");
                     permissionStatus.value = "No Camera permission, requesting Permission";
                     permissions.requestPermission(permissions.CAMERA, (status) => {
                         permissionStatus.value = "Request success";
                         gotPermission.value = true;
                     }, (status) => {
                         permissionStatus.value = "Request Error";
-                        gotPermission.value = false;
                     });
                 }
                 else {
@@ -67,29 +85,50 @@
             });
         }
         else if($q.platform.is.nativeMobile && $q.platform.is.ios){
-            // const video = document.querySelector('video.qrcode-stream-camera');
-            // video.setAttribute('playsinline', true);
-            // console.log(video);
-
-            permissionStatus.value = "Platform ios";
+            permissionStatus.value = "Platfor ios";
             gotPermission.value = true;
         }
         else { 
             gotPermission.value = true;
         }
-    });
 
+
+        // const stream = await navigator.mediaDevices.getUserMedia({
+        //     video: {facingMode: 'environment'}
+        // });
+        // videoElement.value.srcObject = stream;
+        // videoElement.value.setAttribute('playsinline', true);
+        // videoElement.value.play();
+    })
+
+    // navigator.camera.getPicture(
+    //     data => { // on success
+    //       // imageSrc.value = `data:image/jpeg;base64,${data}`
+    //       console.log(data)
+    //     },
+    //     () => { // on fail
+    //       $q.notify('Could not access device camera.')
+    //     },
+    //     {
+    //       // camera options
+    //     }
+    //   )
+    
+
+    // onMounted(() => {
+    //     profile.fetchProfileOnce()
+    // })
 
     const showVerifyDialog = ref(false);
     const verifyState = ref(0); // 0: loading, 1: success, 2: error
 
     const this_owner_name = ref('...');
-    
+
     const onDetect = (firstDetectedCode) => {
         firstDetectedCode.then(async (result) => {
             permissionStatus.value = 'called onDetect'
             const [magic, owner_id, owner_name] = CryptoJS.AES.decrypt(result.content, 'hallo asdasd sdf').toString(CryptoJS.enc.Utf8).split("&#&");
-            // console.log(profile)
+            console.log(profile)
             if(!magic || magic !== profile.MAGIC) return;
 
             showVerifyDialog.value = true;
