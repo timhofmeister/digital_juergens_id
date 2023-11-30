@@ -1,24 +1,31 @@
 <template>
 <q-layout>
-<q-page-container>
+<q-page-container class="bg-grey-4">
     <q-page class="flex flex-center">
-        <div class="q-gutter-md q-px-lg" style="width: 100%">
-            <div class="text-h6">Digitale Jürgens ID</div>
+        <q-card class="signin-card q-ma-lg">
             <q-banner v-if="showError" inline-actions class="text-white bg-red">{{ showError }}</q-banner>
-            <q-input v-model="email" filled type="email" hint="Email" />
-
-            <q-input v-model="password" filled :type="isPwd ? 'password' : 'text'" hint="Password">
-            <template v-slot:append>
-                <q-icon
-                :name="isPwd ? 'visibility_off' : 'visibility'"
-                class="cursor-pointer"
-                @click="isPwd = !isPwd"
-                />
-            </template>
-            </q-input>
-
-            <q-btn :loading="buttonLoading" color="primary" @click="handleSignIn" label="Anmelden" />
-        </div>
+            <q-card-section class="text-h6">
+                Digitale Jürgens ID
+            </q-card-section>
+            <q-separator inset />
+            <q-card-section>
+                <q-input v-model="email" filled type="email" hint="Email" />
+            </q-card-section>
+            <q-card-section>
+                <q-input v-model="password" filled :type="isPwd ? 'password' : 'text'" hint="Password">
+                    <template v-slot:append>
+                        <q-icon
+                        :name="isPwd ? 'visibility_off' : 'visibility'"
+                        class="cursor-pointer"
+                        @click="isPwd = !isPwd"
+                        />
+                    </template>
+                    </q-input>
+                </q-card-section>
+                <q-card-actions class="q-ma-sm">
+                    <q-btn :loading="buttonLoading" color="primary" @click="handleSignIn" label="Anmelden" />
+                </q-card-actions>
+        </q-card>
     </q-page>
 </q-page-container>
 </q-layout>
@@ -59,3 +66,10 @@ const handleSignIn = async () => {
 }
 
 </script>
+
+<style lang="sass" scoped>
+.signin-card
+  width: 100%
+  max-width: 500px
+  border-radius: 10px
+</style>

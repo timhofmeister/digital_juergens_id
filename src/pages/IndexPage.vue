@@ -1,5 +1,5 @@
 <template>
-  <q-page class="flex flex-center bg-grey-4">
+  <q-page class="flex flex-center">
 
     <q-pull-to-refresh @refresh="refresh" color="blue-8">
 
@@ -12,14 +12,15 @@
                     <q-card-section class="q-py-xs">
                     <div class="text-overline">Digitale Jürgens ID</div>
                     <div class="text-h5 q-my-xs">{{ profile.name }}</div>
-                    <div class="text-caption text-grey-8">Mitgliednummer:</div>
+                    <div class="text-caption text-grey-8">Mitgliedsnummer:</div>
                     <div class="text-subtitle1">{{ profile.membership_num }}</div>
                     </q-card-section>
                     
                     <q-card-section>
                         <q-avatar size="6rem">
-                            <img src="https://cdn.quasar.dev/img/avatar.png">
+                            <img v-if="profile.avatar_src" :src="profile.avatar_src">
                         </q-avatar>
+                        <q-inner-loading :showing="profile.loadingAvatar" color="primary" />
                     </q-card-section>
                 </q-card-section>
 
@@ -39,7 +40,7 @@
 
                     <div class="text-caption text-grey-8">Aktueller Rang:</div>
                     <div class="text-subtitle1">{{ profile.rank }}</div>
-                    <div class="text-caption text-grey-10">Geschäftsjahr 2022/2023</div>
+                    <div class="text-caption text-grey-10">Geschäftsjahr {{ profile.fiscal_year }}</div>
                     </q-card-section>
                     <q-card-section class="q-mr-sm">
                         <q-circular-progress v-if="profile.isCheckedState == 1" indeterminate size="1.5rem" color="positive" />
@@ -47,7 +48,7 @@
                     </q-card-section>
                 </q-card-section>
 
-                <q-separator inset :color="profile.isChecked == 2 ? 'green-8' : 'grey-5'"/>
+                <q-separator inset :color="profile.isCheckedState == 2 ? 'positive' : 'grey-5'"/>
 
                 <q-card-section class="flex flex-center">
                     <qrcode-vue :value="profile.qrData" :size="250"/>
@@ -64,7 +65,7 @@
     import QrcodeVue from 'qrcode.vue'
     import { useProfileStore } from 'src/stores/profileStore'
     import { date } from 'quasar'
-
+    
     const profile = useProfileStore();
     onMounted(() => {
         profile.fetchProfileOnce()
@@ -86,6 +87,8 @@
 
 .my-card-verified
   width: 100%
-  border-width: 3px
+  border-style: solid
+  border-width: 1.5px
+  border-radius: 10px
   border-color: $positive
 </style>

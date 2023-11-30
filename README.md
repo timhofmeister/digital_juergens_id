@@ -30,31 +30,42 @@ yarn format
 npm run format
 ```
 
-
-
-### Build the app for production
-```bash
-quasar build
-```
-
-bundletool build-apks --bundle=dist/cordova/android/bundle/release/app-release.aab --output=dist/cordova/android/bundle/release/app-release.apks --mode=universal
-
-### Customize the configuration
-See [Configuring quasar.config.js](https://v2.quasar.dev/quasar-cli-vite/quasar-config-js).
-
-
-
-
 db pwd Oi6Ul2b54qzsM7C8
 
 
+### Build the app for production
 
-# IOS
 
-- Build quasar project without building cordova wrapper: yarn quasar build -m ios --skip-pkg
-- Enter cordova project: cd src-cordova
-- Falls ios platform noch nicht hinzugefügt ist: cordova platform add ios
-- Alternativ platform updaten: cordova prepare ios
+
+
+#### Android
+```bash
+yarn quasar build -m android
+```
+
+```bash
+bundletool build-apks --bundle=dist/cordova/android/bundle/release/app-release.aab --output=dist/cordova/android/bundle/release/app-release.apks --mode=universal
+```
+
+
+#### IOS
+
+- Build quasar project without building cordova wrapper:
+```bash
+yarn quasar build -m ios --skip-pkg
+```
+- Enter cordova project:
+```bash
+cd src-cordova
+```
+- Falls ios platform noch nicht hinzugefügt ist:
+```bash
+cordova platform add ios
+```
+- Alternativ platform updaten:
+```bash
+cordova prepare ios
+```
 - unter src-cordova/platforms/ios Digital Jürgisch ID.xcworkspace mit xCode öffnen 
 - unter Signing & Capabilities - Team "Personal Team" auswählen 
 - Bundle identifier: digital-juergens-id

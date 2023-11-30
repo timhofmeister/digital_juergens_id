@@ -1,11 +1,10 @@
 <template>
 
-    <q-page class="flex flex-center bg-grey-4">
+    <q-page class="flex flex-center">
         
-        <!-- Is v-if="gotPermission" really necessary on Android? It leads to an error in ios when getting the video element -->
         <qrcode-stream v-if="gotPermission" @detect="onDetect"></qrcode-stream>
         
-        <div class="text-h6">{{ permissionStatus }}</div>
+        <!--<div class="text-h6">{{ permissionStatus }}</div>-->
 
         <q-dialog v-model="showVerifyDialog">
             <q-card >
@@ -32,16 +31,21 @@
     import useSupabase from 'boot/supabase'
     import CryptoJS from 'crypto-js'
     import { useProfileStore } from 'src/stores/profileStore'
+    import { useLocationStore } from 'src/stores/locationStore'
     import { useQuasar } from 'quasar'
     import { QrcodeStream } from 'vue3-qrcode-reader'
     
     const profile = useProfileStore();
+    const location = useLocationStore();
+
     const { supabase } = useSupabase();
     const $q = useQuasar();
 
     const permissionStatus = ref('Init Variable permissionStatus');
     const gotPermission = ref(false);
     // var permissions;
+
+    
     
     onMounted(async () => {
         
@@ -49,7 +53,7 @@
 
         if($q.platform.is.nativeMobile && $q.platform.is.android){
             const permissions = cordova.plugins.permissions;
-            permissions.hasPermission(permissions.CAMERA, (status) => {
+            permissions.checkPermission(permissions.CAMERA, (status) => {
                 if (!status.hasPermission) {
                     permissionStatus.value = "No Camera permission, requesting Permission";
                     permissions.requestPermission(permissions.CAMERA, (status) => {
@@ -67,17 +71,16 @@
             });
         }
         else if($q.platform.is.nativeMobile && $q.platform.is.ios){
-            // const video = document.querySelector('video.qrcode-stream-camera');
-            // video.setAttribute('playsinline', true);
-            // console.log(video);
-
             permissionStatus.value = "Platform ios";
             gotPermission.value = true;
         }
         else { 
+            permissionStatus.value = "Platform Web";
             gotPermission.value = true;
         }
     });
+    
+    // document.addEventListener("deviceready", checkPermissions, false);
 
 
     const showVerifyDialog = ref(false);
@@ -88,12 +91,17 @@
     const onDetect = (firstDetectedCode) => {
         firstDetectedCode.then(async (result) => {
             permissionStatus.value = 'called onDetect'
-            const [magic, owner_id, owner_name] = CryptoJS.AES.decrypt(result.content, 'hallo asdasd sdf').toString(CryptoJS.enc.Utf8).split("&#&");
-            // console.log(profile)
+            const [magic, owner_id, owner_name] = CryptoJS.AES.decrypt(result.content, profile.qrKey).toString(CryptoJS.enc.Utf8).split("&#&");
             if(!magic || magic !== profile.MAGIC) return;
 
             showVerifyDialog.value = true;
             this_owner_name.value = owner_name;
+            
+            let currentLocation = null;
+            if(location.latitude && location.longitude) {
+                currentLocation = `POINT(${location.longitude} ${location.latitude})`
+            }
+            // currentLocation = `POINT(6.964705272617972 50.948057634242645)` 
 
             try{
                 const { data, error } = await supabase
@@ -101,7 +109,8 @@
                 .insert([
                     {
                         owner_id: owner_id, 
-                        inspector_id: profile.id
+                        inspector_id: profile.id,
+                        location: currentLocation
                     },
                 ])
             if (error) throw error
@@ -110,7 +119,7 @@
         } catch (error) {
             setTimeout(() => verifyState.value = 2, 2000);
             if (error instanceof Error) {
-                alert(error.message)
+                console.log(error.message)
             }
         } finally {
             setTimeout(() => {

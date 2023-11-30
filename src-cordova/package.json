@@ -17,19 +17,23 @@
     "cordova-ios": "^7.0.1",
     "cordova-plugin-android-permissions": "^1.1.5",
     "cordova-plugin-camera": "^7.0.0",
+    "cordova-plugin-geolocation": "^5.0.0",
     "cordova-plugin-splashscreen": "^6.0.1"
   },
   "cordova": {
     "platforms": [
-      "android",
-      "ios"
+      "ios",
+      "android"
     ],
     "plugins": {
       "cordova-plugin-camera": {
         "ANDROIDX_CORE_VERSION": "1.6.+"
       },
       "cordova-plugin-android-permissions": {},
-      "cordova-plugin-splashscreen": {}
+      "cordova-plugin-splashscreen": {},
+      "cordova-plugin-geolocation": {
+        "GPS_REQUIRED": "true"
+      }
     }
   }
 }
