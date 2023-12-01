@@ -65,7 +65,7 @@
     import QrcodeVue from 'qrcode.vue'
     import { useProfileStore } from 'src/stores/profileStore'
     import { date } from 'quasar'
-    
+
     const profile = useProfileStore();
     onMounted(() => {
         profile.fetchProfileOnce()
@@ -73,7 +73,7 @@
 
     const refresh = (done) => {
         profile.fetchProfile();
-        setTimeout(() => done(), 500);
+        setTimeout(() => done(), 500); // Keep refresh icon alive for 500ms
     }
 
 </script>

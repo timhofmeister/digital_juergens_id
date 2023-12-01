@@ -8,6 +8,7 @@ export const useProfileStore = defineStore('profile', () => {
 
     const { supabase } = useSupabase();
 
+    // Magic must be first part of the qr code to identify a DJID
     const MAGIC = 'IAMADIGITALJUERGENSID';
 
     const id = ref();
@@ -65,11 +66,15 @@ export const useProfileStore = defineStore('profile', () => {
 
             minutes_keep_checked.value = Number(general.filter((elmnt) => elmnt.name === 'minutes_keep_checked')[0].value);
 
+            // Prevent loading avatar from backend if it was changed just before since backend needs some time
+            // to update image and returns old image for a while.
             if (!justLoadedAvatar) {
                 downloadImage();
             }
+
             testCheck();
 
+            // Subscribe to realtime database changes to get notified if profile is verified
             const changes = supabase
                 .channel('new_id_checks')
                 .on(
@@ -118,6 +123,7 @@ export const useProfileStore = defineStore('profile', () => {
     }
     resetValues();
 
+    // Function checks if user was verified (id checked) in the last minutes
     const testCheck = async () => {
         isCheckedState.value = 1;
         const { data: id_checks, err } = await supabase
@@ -144,7 +150,7 @@ export const useProfileStore = defineStore('profile', () => {
     }
     setInterval(() => {
         if (isCheckedState.value == 2) testCheck();
-    }, 60000); // Check every minute
+    }, 60000); // Check every minute if user is still checked
 
     const logout = async () => {
         let { error } = await supabase.auth.signOut();
@@ -184,7 +190,11 @@ export const useProfileStore = defineStore('profile', () => {
         }
     }
 
-    return { id, MAGIC, name, membership_num, birthday, date_of_issue, rank, fiscal_year, avatar_src, qrData, qrKey, loading, loadingAvatar, isLoaded, isCheckedState, error, fetchProfile, fetchProfileOnce, logout, uploadAvatar }
+    return {
+        id, MAGIC, name, membership_num, birthday, date_of_issue, rank,
+        fiscal_year, avatar_src, qrData, qrKey, loading, loadingAvatar, isLoaded, isCheckedState, error,
+        fetchProfile, fetchProfileOnce, logout, uploadAvatar
+    }
 
 });
 

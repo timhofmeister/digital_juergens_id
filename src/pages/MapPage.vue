@@ -15,31 +15,31 @@
     import "leaflet/dist/leaflet.css"
     import L from 'leaflet'
 
+    // Marker cluser addon must be imported after leaflet
     import "leaflet.markercluster/dist/MarkerCluster.css"
     import "leaflet.markercluster/dist/MarkerCluster.Default.css"
     import 'leaflet.markercluster'
     
     import { ref, onMounted } from 'vue'
     import { date } from 'quasar'
-    import { useProfileStore } from 'src/stores/profileStore'
     import { useLocationStore } from 'src/stores/locationStore'
 
-    const profile = useProfileStore();
     const location = useLocationStore();
 
     const errorMessage = ref('');
     const showError = ref(false);
 
     let map;
-    let locationMarker;
+    let locationMarker; // Current location
     let locationMarkerAccuracy;
 
     onMounted(async () => {
 
+        // Options explained at https://leafletjs.com/reference.html#map
         map = L.map('map', {
             zoomSnap: 0,
             zoomDelta: 1,
-            zoomControl: false,
+            zoomControl: false, // Remove default zoom buttons 
             inertia: true,
             inertiaDeceleration: 900,
             tapTolerance: 15,
@@ -47,24 +47,23 @@
             worldCopyJump: true,
         }).setView([51.1642292, 10.4541194], 3.5)
 
+        // Add zoom buttons again at a different location
         L.control.zoom({
             position: 'bottomleft'
         }).addTo(map);
         
+        // Open Street Map (OSM) tile layer
         L.tileLayer('https://tile.openstreetmap.de/{z}/{x}/{y}.png', {
             maxZoom: 20,
             attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
         }).addTo(map);
 
+        // Initially set view to user position
         if(location.latitude && location.longitude) {
             map.setView([location.latitude, location.longitude], 16)
         }
 
-        map.on('moveend', () => { 
-            // console.log(map.getBounds().getNorthWest());
-            // console.log(map.getBounds().getSouthEast());
-        });
-
+        // Update loop for current location
         setInterval(() => {
             if(location.error){
                 errorMessage.value = location.error.message;
@@ -74,7 +73,7 @@
             if(location.latitude && location.longitude) {
                 errorMessage.value = ''
                 showError.value = false;
-                if(!locationMarker){
+                if(!locationMarker){ // Initialize current location marker
                     locationMarker = L.marker([location.latitude, location.longitude], {
                         icon: L.divIcon({html: `<span class="locationMarker pulse"/>`, className: ''})
                     }).addTo(map);
@@ -82,7 +81,7 @@
                         radius: location.accuracy, stroke: false
                     }).addTo(map);
                 }
-                else{
+                else{ // Update current location marker
                     locationMarker.setLatLng([location.latitude, location.longitude])
                     locationMarkerAccuracy.setLatLng([location.latitude, location.longitude])
                     locationMarkerAccuracy.setRadius(location.accuracy)
@@ -94,6 +93,7 @@
             }
         }, 1000)
 
+        // Custom icon for id checks on map
         var checkLocationIcon = L.icon({
             iconUrl: '/map-icons/check_location.svg',
             iconSize: [72, 72],
@@ -104,6 +104,7 @@
         await location.fetchIdChecks();
         let markers = L.markerClusterGroup();
 
+        // Loop all id checks and add to marker clusters. Examples at https://github.com/Leaflet/Leaflet.markercluster 
         for (let i = 0; i < location.id_checks_in_view.length; i++) {
             let id_check = location.id_checks_in_view[i];
 
@@ -120,7 +121,7 @@
 		map.addLayer(markers);
     })
 
-
+    // Callback for locate button click
     const locate = () => {
         if(location.latitude && location.longitude){
             map.flyTo([location.latitude, location.longitude], 16, {duration: 1.5})

@@ -65,10 +65,6 @@
         }
     })
 
-    onMounted(() => {
-        // fileInput.value.click();
-    })
-
     const openCropper = (evt) => {
         const files = evt.target.files;
         if (!files || files.length === 0) {

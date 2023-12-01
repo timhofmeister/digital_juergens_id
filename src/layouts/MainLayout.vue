@@ -82,11 +82,11 @@
     const showAvatarUpload = ref(false);
     const showLogoutConfirmation = ref(false)
 
+    // Start tracking current location
     location.startTracking();
 
     onBeforeUnmount(() => {
         location.stopTracking()
-        console.log("Main Layout before unmount")
     })
     
     const logout = () => {

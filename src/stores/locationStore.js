@@ -37,27 +37,18 @@ export const useLocationStore = defineStore('location', () => {
         navigator.geolocation.clearWatch(watchID);
     }
 
-
+    // Fetch id checks within a rectangle selection on map. 
+    // (min_lat, min_long) is bottom left point and (max_lat, max_long) is upper right point on map.
     const fetchIdChecks = async () => {
-
         try {
-            // const { data: id_checks, err } = await supabase
-            //     .from('id_checks')
-            //     .select('*');
-
             const { data: id_checks, err } = await supabase.rpc('id_checks_in_view', {
-                // min_lat: 28.32144256195213,
-                // min_long: -12.517321217427744,
-                // max_lat: 68.60332469489008,
-                // max_long: 37.801541173673314,
+                // Currently whole Europe is selected but future TODO might be dynamic selection based on view
                 min_lat: 35.35067387745531,
                 min_long: -8.004458935143445,
                 max_lat: 64.16228690324682,
                 max_long: 64.40725560386426,
             })
             if (err) throw err;
-
-            console.log(id_checks)
             id_checks_in_view.value = id_checks;
 
         } catch (err) {

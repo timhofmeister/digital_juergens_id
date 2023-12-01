@@ -99,6 +99,8 @@
             
             let currentLocation = null;
             if(location.latitude && location.longitude) {
+                // Normally, locations are given by (lat long) however, postGis expects (long lat)
+                // No comma in between!!
                 currentLocation = `POINT(${location.longitude} ${location.latitude})`
             }
             // currentLocation = `POINT(6.964705272617972 50.948057634242645)` 
