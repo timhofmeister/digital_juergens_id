@@ -95,7 +95,7 @@
 
         // Custom icon for id checks on map
         var checkLocationIcon = L.icon({
-            iconUrl: '/map-icons/check_location.svg',
+            iconUrl: './map-icons/check_location.svg',
             iconSize: [72, 72],
             iconAnchor: [36, 71],
             popupAnchor: [3, -72],
